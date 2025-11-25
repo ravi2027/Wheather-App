@@ -1,0 +1,368 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Weather App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* ====== Basic Reset ====== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f172a, #1d4ed8);
+      padding: 16px;
+      color: #f9fafb;
+    }
+
+    /* ====== Card Container ====== */
+    .app {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 20px;
+      padding: 20px 18px 18px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .app-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .app-subtitle {
+      font-size: 0.8rem;
+      text-align: center;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+
+    /* ====== Input Section ====== */
+    .form-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .input-location {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.85);
+      color: #f9fafb;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .input-location::placeholder {
+      color: #6b7280;
+    }
+
+    .btn-search {
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: #38bdf8;
+      color: #0f172a;
+      transition: 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-search:hover {
+      background: #0ea5e9;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
+    }
+
+    .btn-search:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    /* ====== Status Text ====== */
+    .status {
+      min-height: 18px;
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+      color: #e5e7eb;
+    }
+
+    .status.error {
+      color: #fecaca;
+    }
+
+    .status.info {
+      color: #bbf7d0;
+    }
+
+    /* ====== Weather Card ====== */
+    .weather-card {
+      display: none; /* hidden until data loaded */
+      margin-top: 4px;
+      padding: 16px 14px;
+      border-radius: 16px;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.25), transparent 55%),
+                  rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .weather-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .city-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .country-name {
+      font-size: 0.8rem;
+      color: #cbd5f5;
+    }
+
+    .updated-time {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+
+    .temp {
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .temp-extra {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      margin-bottom: 6px;
+    }
+
+    .condition-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .condition-icon {
+      width: 48px;
+      height: 48px;
+    }
+
+    .condition-text {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .mini-grid {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      color: #d1d5db;
+    }
+
+    .mini-item span {
+      display: block;
+    }
+
+    .mini-label {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+
+    .footer {
+      margin-top: 10px;
+      font-size: 0.7rem;
+      text-align: center;
+      color: #9ca3af;
+    }
+
+    @media (max-width: 480px) {
+      .app {
+        padding: 18px 14px;
+      }
+      .temp {
+        font-size: 2.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1 class="app-title">Weather Today</h1>
+    <p class="app-subtitle">Enter your city name and get today's temperature 🌤️</p>
+
+    <!-- Input row -->
+    <div class="form-row">
+      <input
+        type="text"
+        id="location-input"
+        class="input-location"
+        placeholder="e.g. London, Delhi, New York"
+      />
+      <button id="search-btn" class="btn-search">Get Temp</button>
+    </div>
+
+    <!-- Status / error message -->
+    <div id="status" class="status"></div>
+
+    <!-- Weather card -->
+    <div id="weather-card" class="weather-card">
+      <div class="weather-header">
+        <div>
+          <div id="city-name" class="city-name">–</div>
+          <div id="country-name" class="country-name">–</div>
+        </div>
+        <div id="updated-time" class="updated-time">Updated: –</div>
+      </div>
+
+      <div id="temp" class="temp">–°C</div>
+      <div id="temp-extra" class="temp-extra">Feels like –°C</div>
+
+      <div class="condition-row">
+        <img id="icon" class="condition-icon" alt="weather icon" />
+        <div>
+          <div id="condition-text" class="condition-text">–</div>
+        </div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini-item">
+          <span class="mini-label">Humidity</span>
+          <span id="humidity">–%</span>
+        </div>
+        <div class="mini-item">
+          <span class="mini-label">Wind</span>
+          <span id="wind">– kph</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Tip: Press <strong>Enter</strong> after typing a city name.
+    </div>
+  </div>
+
+  <!-- ====== Small JavaScript to call WeatherAPI ====== -->
+  <script>
+    const API_KEY = "06e987de47614fb8ba4185700252511";
+    const BASE_URL = "https://api.weatherapi.com/v1/current.json";
+
+    const input = document.getElementById("location-input");
+    const btn = document.getElementById("search-btn");
+    const statusEl = document.getElementById("status");
+    const card = document.getElementById("weather-card");
+
+    const cityNameEl = document.getElementById("city-name");
+    const countryNameEl = document.getElementById("country-name");
+    const updatedTimeEl = document.getElementById("updated-time");
+    const tempEl = document.getElementById("temp");
+    const tempExtraEl = document.getElementById("temp-extra");
+    const conditionTextEl = document.getElementById("condition-text");
+    const iconEl = document.getElementById("icon");
+    const humidityEl = document.getElementById("humidity");
+    const windEl = document.getElementById("wind");
+
+    function setStatus(msg, type = "") {
+      statusEl.textContent = msg;
+      statusEl.className = "status" + (type ? " " + type : "");
+    }
+
+    async function getWeather(location) {
+      if (!location || !location.trim()) {
+        setStatus("Please enter a location.", "error");
+        return;
+      }
+
+      setStatus("Fetching weather for " + location + "...", "info");
+
+      try {
+        const url =
+          BASE_URL +
+          "?key=" + encodeURIComponent(API_KEY) +
+          "&q=" + encodeURIComponent(location.trim()) +
+          "&aqi=no";
+
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          throw new Error("Network error: " + res.status);
+        }
+
+        const data = await res.json();
+
+        if (data.error) {
+          throw new Error(data.error.message || "Invalid location");
+        }
+
+        renderWeather(data);
+        setStatus("Showing today's weather for " + data.location.name + ".", "info");
+      } catch (err) {
+        card.style.display = "none";
+        setStatus("Error: " + err.message, "error");
+      }
+    }
+
+    function renderWeather(data) {
+      const { location, current } = data;
+
+      cityNameEl.textContent = location.name || "-";
+      countryNameEl.textContent = location.country || "-";
+      updatedTimeEl.textContent = "Updated: " + (current.last_updated || "-");
+
+      tempEl.textContent = current.temp_c.toFixed(1) + "°C";
+      tempExtraEl.textContent = "Feels like " + current.feelslike_c.toFixed(1) + "°C";
+
+      conditionTextEl.textContent = current.condition?.text || "-";
+
+      if (current.condition?.icon) {
+        const iconUrl = current.condition.icon.startsWith("//")
+          ? "https:" + current.condition.icon
+          : current.condition.icon;
+        iconEl.src = iconUrl;
+        iconEl.style.display = "block";
+      } else {
+        iconEl.style.display = "none";
+      }
+
+      humidityEl.textContent = current.humidity + "%";
+      windEl.textContent = current.wind_kph + " kph";
+
+      card.style.display = "block";
+    }
+
+    // Button click
+    btn.addEventListener("click", () => {
+      getWeather(input.value);
+    });
+
+    // Enter key
+    input.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") {
+        getWeather(input.value);
+      }
+    });
+  </script>
+</body>
+</html>
