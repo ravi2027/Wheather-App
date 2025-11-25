@@ -51,6 +51,13 @@ It is perfect for beginners learning API integration and frontend development, a
 
 ## 📷 Application Preview  
 
+<img width="965" height="696" alt="Screenshot 2025-11-26 011301" src="https://github.com/user-attachments/assets/8a014f96-b7ee-4a90-832c-498479ba159f" />
+
+
+
+<img width="870" height="873" alt="Screenshot 2025-11-26 011317" src="https://github.com/user-attachments/assets/4e1cb835-26e3-49d8-a205-a824d654915b" />
+
+
 The app includes:
 
 - A clean input field to enter a city  
